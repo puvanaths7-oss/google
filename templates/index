@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google AI Study Assistant</title>
+    <style>
+        :root {
+            --bg: #0b1020;
+            --panel: rgba(18, 25, 48, 0.88);
+            --panel-soft: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.10);
+            --text: #f4f7ff;
+            --muted: #aab4d0;
+            --accent: #8b7cff;
+            --accent-2: #5de1ff;
+            --user: #6256e8;
+            --assistant: #17203b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% 15%, rgba(93, 225, 255, 0.14), transparent 28%),
+                radial-gradient(circle at 85% 80%, rgba(139, 124, 255, 0.16), transparent 30%),
+                var(--bg);
+            display: grid;
+            place-items: center;
+            padding: 18px;
+        }
+
+        .app {
+            width: min(980px, 100%);
+            height: min(820px, calc(100vh - 36px));
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(18px);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 15px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #08101f;
+            font-weight: 900;
+            font-size: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        header p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: #b8c4df;
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #58e39b;
+            box-shadow: 0 0 12px rgba(88, 227, 155, 0.8);
+        }
+
+        #chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 18px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            max-width: min(78%, 700px);
+            padding: 14px 17px;
+            border-radius: 20px;
+            line-height: 1.55;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .assistant .bubble {
+            background: var(--assistant);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 6px;
+        }
+
+        .user .bubble {
+            background: linear-gradient(135deg, var(--user), #806fff);
+            border-bottom-right-radius: 6px;
+        }
+
+        .typing {
+            display: inline-flex;
+            gap: 5px;
+            padding: 16px 18px;
+        }
+
+        .typing span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #aab4d0;
+            animation: bounce 1s infinite ease-in-out;
+        }
+
+        .typing span:nth-child(2) { animation-delay: .15s; }
+        .typing span:nth-child(3) { animation-delay: .30s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            padding: 18px;
+            border-top: 1px solid var(--border);
+            background: rgba(8, 12, 28, 0.35);
+        }
+
+        textarea {
+            flex: 1;
+            min-height: 52px;
+            max-height: 150px;
+            resize: none;
+            padding: 15px 17px;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+            outline: none;
+            color: var(--text);
+            background: var(--panel-soft);
+            font: inherit;
+        }
+
+        textarea:focus {
+            border-color: rgba(139, 124, 255, .7);
+        }
+
+        button {
+            width: 54px;
+            border: 0;
+            border-radius: 17px;
+            cursor: pointer;
+            color: #08101f;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            font-size: 19px;
+            transition: transform .15s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .55;
+            transform: none;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 0;
+            }
+
+            .app {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            #chat {
+                padding: 20px 15px;
+            }
+
+            .bubble {
+                max-width: 88%;
+            }
+
+            .status {
+                display: none;
+            }
+
+            form {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <header>
+            <div class="logo">AI</div>
+            <div>
+                <h1>Google AI Study Assistant</h1>
+                <p>Learn Google AI, Gemini, APIs and related concepts</p>
+            </div>
+            <div class="status">
+                <span class="dot"></span>
+                Online
+            </div>
+        </header>
+
+        <section id="chat" aria-live="polite">
+            <div class="message assistant">
+                <div class="bubble">Hi! I’m your Google AI Study Assistant. Ask me about Google AI, Gemini, APIs, prompt engineering, or related study topics.</div>
+            </div>
+        </section>
+
+        <form id="chatForm">
+            <textarea id="messageInput" placeholder="Ask a Google AI study question..." rows="1"></textarea>
+            <button id="sendButton" type="submit" aria-label="Send">➤</button>
+        </form>
+    </main>
+
+    <script>
+        const form = document.getElementById("chatForm");
+        const input = document.getElementById("messageInput");
+        const chat = document.getElementById("chat");
+        const button = document.getElementById("sendButton");
+
+        function addMessage(text, role) {
+            const wrapper = document.createElement("div");
+            wrapper.className = `message ${role}`;
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            bubble.textContent = text;
+
+            wrapper.appendChild(bubble);
+            chat.appendChild(wrapper);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function showTyping() {
+            const wrapper = document.createElement("div");
+            wrapper.className = "message assistant";
+            wrapper.id = "typing";
+
+            wrapper.innerHTML = `
+                <div class="bubble typing">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+
+            chat.appendChild(wrapper);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function removeTyping() {
+            document.getElementById("typing")?.remove();
+        }
+
+        input.addEventListener("input", () => {
+            input.style.height = "auto";
+            input.style.height = `${Math.min(input.scrollHeight, 150)}px`;
+        });
+
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                form.requestSubmit();
+            }
+        });
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const message = input.value.trim();
+            if (!message || button.disabled) return;
+
+            addMessage(message, "user");
+            input.value = "";
+            input.style.height = "auto";
+            button.disabled = true;
+            showTyping();
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                removeTyping();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Something went wrong.");
+                }
+
+                addMessage(data.reply, "assistant");
+            } catch (error) {
+                removeTyping();
+                addMessage(`Error: ${error.message}`, "assistant");
+            } finally {
+                button.disabled = false;
+                input.focus();
+            }
+        });
+    </script>
+</body>
+</html>
